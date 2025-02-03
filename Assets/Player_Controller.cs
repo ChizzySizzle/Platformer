@@ -2,11 +2,13 @@
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class Player_Controller : MonoBehaviour
 {
     [Header("Player Variables")]
     public float speed = 5;
+    public float maxSpeed = 7;
     public float jumpPower = 8;
     public bool isGrounded = true;
 
@@ -20,42 +22,52 @@ public class Player_Controller : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
+
         animator = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
-    void Update() {
-        animator.SetFloat("Speed", Mathf.Abs(moveVector.x));
+    void FixedUpdate() {
 
-        if (moveVector.x > 0){
-            transform.Translate(Vector2.right * Time.deltaTime * speed);
+        animator.SetFloat("Speed", moveVector.magnitude);
+
+
+        if (moveVector.x > 0 && rb.velocity.x < maxSpeed) {
+            rb.AddForce(Vector2.right * speed);
             sprite.flipX = false;
         }
-        else if (moveVector.x < 0){
-            transform.Translate(Vector2.left * Time.deltaTime * speed);  
+        else if (moveVector.x < 0 && rb.velocity.x > -maxSpeed){
+            rb.AddForce(Vector2.left * speed);
             sprite.flipX = true;
         }
     }
 
     private void OnCollisionEnter2D(Collision2D other) {
+    
         if (other.gameObject.CompareTag("ground")){
             isGrounded = true;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other) {
+
+        if (other.gameObject.CompareTag("boundary")) {
+            
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 
     public void OnMove(InputValue moveValue) {
 
         moveVector = moveValue.Get<Vector2>();
-
-        Debug.Log(moveVector.x);
-        Debug.Log(moveVector.y);
     }
 
     public void OnJump() {
-        if (isGrounded) {
-            rb.AddForce(new Vector2(0,jumpPower), ForceMode2D.Impulse);
+
+        if (isGrounded && rb.velocity.y == 0) {
+            rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             isGrounded = false;
         }
     }
