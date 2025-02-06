@@ -34,12 +34,14 @@ public class Player_Controller : MonoBehaviour
         animator.SetFloat("Speed", moveVector.magnitude);
 
 
-        if (moveVector.x > 0 && rb.velocity.x < maxSpeed) {
-            rb.AddForce(Vector2.right * speed);
+        if (moveVector.x > 0 /* && rb.velocity.x < maxSpeed */) {
+            transform.Translate(Vector2.right * Time.deltaTime * speed);
+            // rb.AddForce(Vector2.right * speed);
             sprite.flipX = false;
         }
-        else if (moveVector.x < 0 && rb.velocity.x > -maxSpeed){
-            rb.AddForce(Vector2.left * speed);
+        else if (moveVector.x < 0 /* && rb.velocity.x > -maxSpeed */){
+            transform.Translate(Vector2.left * Time.deltaTime * speed);
+            // rb.AddForce(Vector2.left * speed);
             sprite.flipX = true;
         }
     }
@@ -54,7 +56,7 @@ public class Player_Controller : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other) {
 
         if (other.gameObject.CompareTag("boundary")) {
-            
+            GameManager.instance.DecreaseLives();
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
